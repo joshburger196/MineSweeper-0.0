@@ -1,43 +1,148 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { fieldReducer } from '../services/fieldReducer';
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import TileComp from './Tile.component';
 import { Field } from '../classes/Field';
-import { ActionType } from '../interfaces';
+import { ActionType, Flag } from '../CustomTypes';
+import { Action } from '../classes/Action';
 
-const FIELD_SIZE=10;
-const MINE_COUNT=20;
+const FIELD_WIDTH=7;
+const FIELD_HEIGHT=10;
+const MINE_COUNT=10;
+//const MUD_COUNT=30;
 
 const FieldComp = () => {
-  const [fieldState,updateField]=useReducer(fieldReducer,new Field(FIELD_SIZE,FIELD_SIZE,MINE_COUNT));
+  const [fieldState,updateField]=useReducer(fieldReducer,new Field(FIELD_HEIGHT,FIELD_WIDTH,MINE_COUNT));
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [flagMode,setFlagMode]=useState(false);
+  const [selectedFlag, selectFlag]=useState(Flag.deadly);
   
+  const handleTilePress=(tileRow:number,tileCol:number)=>
+  {
+    let tile=fieldState.matrix[tileRow][tileCol]
+    if(!tile.isDiscovered && tile.flag===null)
+    {
+      if(!flagMode)
+        discoverTile(tileRow,tileCol);
+      else
+        flagTile(tileRow,tileCol);
+    }
+  }
+
   const discoverTile=(tileRow:number,tileCol:number)=>
   {
-    updateField({actType:ActionType.discoverCell,actRow:tileRow,actCol:tileCol})
+    if(!fieldState.isGameOver)
+      updateField(new Action(ActionType.discoverTile,tileRow,tileCol));
+
+    /*{
+      var newField=Field.copyField(fieldState);
+      newField.matrix[tileRow][tileCol].isDiscovered=true;
+      if(newField.matrix[tileRow][tileCol].content==TileContent.mine)
+          newField.isGameOver=true;
+      else if(newField.matrix[tileRow][tileCol].content==TileContent.treasure)
+          newField.isGameOver=newField.isGameWon=true;
+      updateField(newField);
+    }*/
+
+  }
+
+  const flagTile=(tileRow:number,tileCol:number)=>
+  {
+    updateField(new Action(ActionType.flagTile,tileRow,tileCol,selectedFlag))
+  }
+
+  const toggleFlagMode=(flag:Flag)=>
+  {
+    setFlagMode(!flagMode);
+    selectFlag(flag);
+  }
+
+  const toggleMenu=()=>
+  {
+    setMenuVisible(!menuVisible);
   }
 
   const resetGame=()=>
   {
-    updateField({actType:ActionType.resetField,actRow:0,actCol:0});
+    //updateField(new Field(fieldState.width,fieldState.height,fieldState.mineCount))
+    updateField(new Action(ActionType.resetField));
+    setMenuVisible(false);
+  }
+  const revealField=()=>
+  {
+    //updateField(new Field(fieldState.width,fieldState.height,fieldState.mineCount))
+    updateField(new Action(ActionType.revealField));
+    setMenuVisible(false);
   }
 
   return (
-    <View style={styles.container}>
-      <View>
+    <View style={styles.centeredView}>
+      <View style={styles.field}>
         {fieldState.matrix.map((row, rowIndex)=>(
           <View key={rowIndex} style={styles.row}>
             {row.map((tile,tileIndex)=>(
               <TileComp
                 key={tileIndex}
                 tileObj={fieldState.matrix[rowIndex][tileIndex]}
-                onTilePress={(tileRow,tileCol)=>{discoverTile(tileRow,tileCol)}}
+                onTilePress={(tileRow,tileCol)=>{handleTilePress(tileRow,tileCol)}}
               ></TileComp>
             ))}
           </View>
         ))}
       </View>
-      <Pressable onPress={resetGame}>
-        <Text style={styles.resetButton}>🔄</Text>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={menuVisible}
+        onRequestClose={toggleMenu}
+      >
+        <View style={styles.centeredView}>
+          <View style={[styles.modalView,styles.row]}>
+            <Pressable onPress={toggleMenu}>
+              <Text style={styles.button}>▶️</Text>
+            </Pressable>
+            <Pressable onPress={resetGame}>
+              <Text style={styles.button}>🔄</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={fieldState.isGameOver}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text>
+              {fieldState.isGameWon ? "You won!" : "You lost!"}
+            </Text>
+
+            <View style={styles.row}>
+              <Pressable onPress={resetGame}>
+                <Text style={styles.button}>🔄</Text>
+              </Pressable>
+
+              <Pressable onPress={revealField}>
+                <Text style={styles.button}>👁️</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <View style={styles.row}>
+        <Pressable 
+          style={selectedFlag==Flag.deadly&&flagMode&&styles.pressedButton}
+          onPress={()=>{toggleFlagMode(Flag.deadly)}}>
+          <Text style={styles.button}>🏴‍☠️</Text>
+        </Pressable>
+      </View>
+
+      <Pressable onPress={toggleMenu}>
+        <Text style={styles.button}>⏸️</Text>
       </Pressable>
     </View>
   )
@@ -46,22 +151,46 @@ const FieldComp = () => {
 
 
 const styles=StyleSheet.create({
-  container:
+  centeredView:
   {
     flex: 1,
-    gap:30,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  row:
+  pageElements:{gap:30},
+  field:
   {
-    flexDirection:"row"
+    borderWidth:1,
+    borderStyle:"dotted",
   },
-  resetButton:
+  row:{flexDirection:"row"},
+  button:{fontSize:30},
+  pressedButton:
   {
-    fontSize:30,
-  }
+    backgroundColor:"lightgrey",
+    borderWidth:3,
+    borderStyle:"solid",
+    borderBottomColor:"white",
+    borderRightColor:"white",
+    borderTopColor:"grey",
+    borderLeftColor:"grey",
+  },
+  modalView:
+  {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
 });
 
 export default FieldComp;

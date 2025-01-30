@@ -1,20 +1,44 @@
+import { Action } from "../classes/Action";
 import { Field } from "../classes/Field";
-import {ITile,IAction, ActionType} from "../interfaces";
+import { ActionType, TileContent} from "../CustomTypes";
 
-export function fieldReducer(field:Field,action:IAction):Field
+export function fieldReducer(field:Field,act:Action):Field
 {
-    const {actType,actRow,actCol}=action;
-    switch(actType)
+    var newField:Field;
+    switch(act.type)
     {
-        case ActionType.discoverCell:
-            var newField=Field.copyField(field);
-            newField.matrix[actRow][actCol].isDiscovered=true;
-            if(newField.matrix[actRow][actCol].isMine)
-                alert("You Lost!");
-            return newField;
+        case ActionType.discoverTile:
+            newField=Field.copyField(field);
+            newField.matrix[act.row][act.col].isDiscovered=true;
+            if(newField.matrix[act.row][act.col].content==TileContent.mine)
+                newField.isGameOver=true;
+            else if(newField.matrix[act.row][act.col].content==TileContent.treasure)
+                newField.isGameOver=newField.isGameWon=true;
+            break;
+        
+        case ActionType.flagTile:
+            newField=Field.copyField(field);
+            let tile=newField.matrix[act.row][act.col];
+            if(tile.flag===null)
+                tile.flag=act.flag;
+            else
+                tile.flag=null;
+            break;
+        
         case ActionType.resetField:
-            var newField=new Field(field.width,field.height,field.mineCount);
-            return newField;
+            newField=new Field(field.width,field.height,field.mineCount);
+            break;
+        
+        case ActionType.revealField:
+            newField=Field.copyField(field);
+            for(let iRow=0;iRow<field.height;iRow++)
+                for(let iCol=0;iCol<field.width;iCol++)
+                {
+                    field.matrix[iRow][iCol].isDiscovered=true;
+                }
+            break;
+        default:
+            newField=field;
     }
-    return field;
+    return newField;
 }

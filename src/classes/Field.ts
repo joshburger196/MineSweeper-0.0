@@ -1,11 +1,20 @@
-import {ICoord, ITile} from "../interfaces";
-import { createTile } from "../services/createTile";
+import {ICoord, TileContent} from "../CustomTypes";
+import { Tile } from "./Tile";
 
 export class Field{
+    //Set up properties
     width:number;
     height:number;
     mineCount:number;
-    matrix:ITile[][];
+    //mudCount:number;
+    treasureCount:number=1;
+
+    //running properties
+    turnCount:number=0;
+    isGameOver:boolean=false;
+    isGameWon:boolean=false;
+
+    matrix:Tile[][];
 
     static copyField(field:Field)
     {
@@ -14,18 +23,19 @@ export class Field{
         return newField;
     }
 
-    constructor(width:number,height:number,mineCount:number,populate:boolean=true)
+    constructor(height:number,width:number,mineCount:number,populate:boolean=true)
     {
         this.width=width;
         this.height=height;
         this.mineCount=mineCount;
+        //this.mudCount=mudCount;
         this.matrix=[];
-        var row:ITile[];
+        var row:Tile[];
         for(var iRow=0; iRow<height; iRow++)
         {
             row=[];
             for(var iCol=0; iCol<width; iCol++)
-                row.push(createTile(iRow,iCol));
+                row.push(new Tile(iRow,iCol));
             this.matrix.push(row);
         }
 
@@ -39,14 +49,43 @@ export class Field{
                 let col=Math.floor(Math.random()*this.width);
                 if(row==0 && col==0)
                     continue;
-                if(this.matrix[row][col].isMine)
-                    continue;
-                else
+                else if(this.matrix[row][col].content==TileContent.nothing)
                 {
-                    this.matrix[row][col].isMine=true;
+                    this.matrix[row][col].content=TileContent.mine;
                     minesToInsert--;
                     this.incrementAdjMineCounts(row,col);
-                }    
+                }
+            }
+
+            //Insert random mud tiles, except on the first cell
+            /*let mudToInsert=this.mudCount;
+            while(mudToInsert>0)
+            {
+                let row=Math.floor(Math.random()*this.height);
+                let col=Math.floor(Math.random()*this.width);
+                if(row==0 && col==0)
+                    continue;
+                if(this.matrix[row][col].content==TileContent.nothing)
+                {
+                    this.matrix[row][col].content=TileContent.mud;
+                    mudToInsert--;
+                    this.incrementAdjMineCounts(row,col);
+                }
+            }*/
+
+            //Insert 1 treasure
+            let treasureToInsert=this.treasureCount;
+            while(treasureToInsert>0)
+            {
+                let row=Math.floor(Math.random()*this.height);
+                let col=Math.floor(Math.random()*this.width);
+                if(row==0 && col==0)
+                    continue;
+                else if(this.matrix[row][col].content==TileContent.nothing)
+                {
+                    this.matrix[row][col].content=TileContent.treasure;
+                    treasureToInsert--;
+                }
             }
         }
     }
