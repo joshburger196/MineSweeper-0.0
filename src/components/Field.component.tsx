@@ -53,8 +53,11 @@ const FieldComp = () => {
 
   const toggleFlagMode=(flag:Flag)=>
   {
-    setFlagMode(!flagMode);
-    selectFlag(flag);
+    if(!fieldState.isGameOver)
+    {
+      setFlagMode(!flagMode);
+      selectFlag(flag);
+    }
   }
 
   const toggleMenu=()=>
@@ -135,7 +138,7 @@ const FieldComp = () => {
 
       <View style={styles.row}>
         <Pressable 
-          style={selectedFlag==Flag.deadly&&flagMode&&styles.pressedButton}
+          style={(selectedFlag==Flag.deadly)&&flagMode&&styles.pressedButton}
           onPress={()=>{toggleFlagMode(Flag.deadly)}}>
           <Text style={styles.button}>🏴‍☠️</Text>
         </Pressable>
