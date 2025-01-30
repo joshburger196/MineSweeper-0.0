@@ -26,7 +26,7 @@ export function fieldReducer(field:Field,act:Action):Field
             break;
         
         case ActionType.resetField:
-            newField=new Field(field.width,field.height,field.mineCount);
+            newField=new Field(field.height,field.width,field.mineCount);
             break;
         
         case ActionType.revealField:

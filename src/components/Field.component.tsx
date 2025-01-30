@@ -8,7 +8,7 @@ import { Action } from '../classes/Action';
 
 const FIELD_WIDTH=7;
 const FIELD_HEIGHT=10;
-const MINE_COUNT=10;
+const MINE_COUNT=7;
 //const MUD_COUNT=30;
 
 const FieldComp = () => {
@@ -20,12 +20,12 @@ const FieldComp = () => {
   const handleTilePress=(tileRow:number,tileCol:number)=>
   {
     let tile=fieldState.matrix[tileRow][tileCol]
-    if(!tile.isDiscovered && tile.flag===null)
+    if(!tile.isDiscovered)
     {
-      if(!flagMode)
-        discoverTile(tileRow,tileCol);
-      else
+      if(flagMode)
         flagTile(tileRow,tileCol);
+      else if(tile.flag===null)
+        discoverTile(tileRow,tileCol);   
     }
   }
 

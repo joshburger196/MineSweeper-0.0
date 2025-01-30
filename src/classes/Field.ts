@@ -18,7 +18,7 @@ export class Field{
 
     static copyField(field:Field)
     {
-        var newField= new Field(field.width,field.height,field.mineCount,false);
+        var newField= new Field(field.height,field.width,field.mineCount,false);
         newField.matrix=field.matrix.slice();
         return newField;
     }
