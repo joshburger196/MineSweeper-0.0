@@ -21,6 +21,9 @@ const TileComp = (props:Props) => {
     /*case TileContent.mud:
       contentString="🟫";
       break;*/
+    case TileContent.coin:
+      contentString="🪙";
+      break;
     case TileContent.treasure:
       contentString="👑";
       break;
@@ -49,8 +52,8 @@ const TileComp = (props:Props) => {
 const styles=StyleSheet.create({
   container:
   {
-    width:35,
-    height:35,
+    width:40,
+    height:40,
 
     alignItems:"center",
     justifyContent:"center",

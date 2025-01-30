@@ -3,16 +3,16 @@ import { fieldReducer } from '../services/fieldReducer';
 import { useReducer, useState } from 'react';
 import TileComp from './Tile.component';
 import { Field } from '../classes/Field';
-import { ActionType, Flag } from '../CustomTypes';
+import { ActionType, Flag, TileContent } from '../CustomTypes';
 import { Action } from '../classes/Action';
 
 const FIELD_WIDTH=7;
 const FIELD_HEIGHT=10;
 const MINE_COUNT=7;
-//const MUD_COUNT=30;
+const COIN_COUNT=10;
 
 const FieldComp = () => {
-  const [fieldState,updateField]=useReducer(fieldReducer,new Field(FIELD_HEIGHT,FIELD_WIDTH,MINE_COUNT));
+  const [fieldState,updateField]=useReducer(fieldReducer,new Field(FIELD_HEIGHT,FIELD_WIDTH,MINE_COUNT,COIN_COUNT));
   const [menuVisible, setMenuVisible] = useState(false);
   const [flagMode,setFlagMode]=useState(false);
   const [selectedFlag, selectFlag]=useState(Flag.deadly);
@@ -20,35 +20,27 @@ const FieldComp = () => {
   const handleTilePress=(tileRow:number,tileCol:number)=>
   {
     let tile=fieldState.matrix[tileRow][tileCol]
-    if(!tile.isDiscovered)
+    if(!tile.isDiscovered && !fieldState.isGameOver)
     {
       if(flagMode)
         flagTile(tileRow,tileCol);
       else if(tile.flag===null)
         discoverTile(tileRow,tileCol);   
     }
+    else if(tile.content==TileContent.coin)
+      collectCoin(tileRow,tileCol);
   }
 
-  const discoverTile=(tileRow:number,tileCol:number)=>
-  {
-    if(!fieldState.isGameOver)
+  const discoverTile=(tileRow:number,tileCol:number)=>{
       updateField(new Action(ActionType.discoverTile,tileRow,tileCol));
-
-    /*{
-      var newField=Field.copyField(fieldState);
-      newField.matrix[tileRow][tileCol].isDiscovered=true;
-      if(newField.matrix[tileRow][tileCol].content==TileContent.mine)
-          newField.isGameOver=true;
-      else if(newField.matrix[tileRow][tileCol].content==TileContent.treasure)
-          newField.isGameOver=newField.isGameWon=true;
-      updateField(newField);
-    }*/
-
   }
 
-  const flagTile=(tileRow:number,tileCol:number)=>
-  {
+  const flagTile=(tileRow:number,tileCol:number)=>{
     updateField(new Action(ActionType.flagTile,tileRow,tileCol,selectedFlag))
+  }
+
+  const collectCoin=(tileRow:number,tileCol:number)=>{
+    updateField(new Action(ActionType.collectCoin,tileRow,tileCol))
   }
 
   const toggleFlagMode=(flag:Flag)=>
@@ -79,7 +71,11 @@ const FieldComp = () => {
   }
 
   return (
+    
     <View style={styles.centeredView}>
+      <View style={styles.row}>
+        <Text>🪙:{fieldState.coinsDiscovered}</Text>
+      </View>
       <View style={styles.field}>
         {fieldState.matrix.map((row, rowIndex)=>(
           <View key={rowIndex} style={styles.row}>

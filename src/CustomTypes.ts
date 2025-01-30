@@ -8,6 +8,7 @@ enum ActionType
 {
     discoverTile,
     flagTile,
+    collectCoin,
     resetField,
     revealField
 } 
@@ -17,19 +18,13 @@ enum Flag
     deadly
 }
 
-interface IAction
-{
-    actType:ActionType,
-    actRow:number,
-    actCol:number,
-}
-
 enum TileContent
 {
     mine,
     mud,
+    coin,
     treasure,
     nothing
 }
 
-export {IAction,ActionType,ICoord,TileContent,Flag};
+export {ActionType,ICoord,TileContent,Flag};

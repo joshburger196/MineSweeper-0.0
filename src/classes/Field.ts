@@ -7,10 +7,11 @@ export class Field{
     height:number;
     mineCount:number;
     //mudCount:number;
-    treasureCount:number=1;
+    coinCount:number;
+    treasureCount:number=0;
 
     //running properties
-    turnCount:number=0;
+    coinsDiscovered:number=0;
     isGameOver:boolean=false;
     isGameWon:boolean=false;
 
@@ -18,17 +19,19 @@ export class Field{
 
     static copyField(field:Field)
     {
-        var newField= new Field(field.height,field.width,field.mineCount,false);
+        var newField= new Field(field.height,field.width,field.mineCount,field.coinCount,false);
         newField.matrix=field.matrix.slice();
+        newField.coinsDiscovered=field.coinsDiscovered;
         return newField;
     }
 
-    constructor(height:number,width:number,mineCount:number,populate:boolean=true)
+    constructor(height:number,width:number,mineCount:number,coinCount:number=0,populate:boolean=true)
     {
         this.width=width;
         this.height=height;
         this.mineCount=mineCount;
         //this.mudCount=mudCount;
+        this.coinCount=coinCount;
         this.matrix=[];
         var row:Tile[];
         for(var iRow=0; iRow<height; iRow++)
@@ -72,6 +75,21 @@ export class Field{
                     this.incrementAdjMineCounts(row,col);
                 }
             }*/
+
+            //Insert random coin tiles, except on the first cell
+            let coinsToInsert=this.coinCount;
+            while(coinsToInsert>0)
+            {
+                let row=Math.floor(Math.random()*this.height);
+                let col=Math.floor(Math.random()*this.width);
+                if(row==0 && col==0)
+                    continue;
+                if(this.matrix[row][col].content==TileContent.nothing)
+                {
+                    this.matrix[row][col].content=TileContent.coin;
+                    coinsToInsert--;
+                }
+            }
 
             //Insert 1 treasure
             let treasureToInsert=this.treasureCount;
