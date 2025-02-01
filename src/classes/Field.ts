@@ -5,13 +5,17 @@ export class Field{
     //Set up properties
     width:number;
     height:number;
+
     mineCount:number;
-    //mudCount:number;
+    mushroomCount:number;
     coinCount:number;
     treasureCount:number=0;
 
+    poisonResistence:number=3; //How many mushrooms until gameOver?
+
     //running properties
     coinsDiscovered:number=0;
+    mushroomsDiscovered:number=0;
     isGameOver:boolean=false;
     isGameWon:boolean=false;
 
@@ -19,18 +23,19 @@ export class Field{
 
     static copyField(field:Field)
     {
-        var newField= new Field(field.height,field.width,field.mineCount,field.coinCount,false);
+        var newField= new Field(field.height,field.width,field.mineCount,field.mushroomCount,field.coinCount,false);
         newField.matrix=field.matrix.slice();
         newField.coinsDiscovered=field.coinsDiscovered;
+        newField.mushroomsDiscovered=field.mushroomsDiscovered;
         return newField;
     }
 
-    constructor(height:number,width:number,mineCount:number,coinCount:number=0,populate:boolean=true)
+    constructor(height:number,width:number,mineCount:number,mushroomCount:number,coinCount:number=0,populate:boolean=true)
     {
         this.width=width;
         this.height=height;
         this.mineCount=mineCount;
-        //this.mudCount=mudCount;
+        this.mushroomCount=mushroomCount;
         this.coinCount=coinCount;
         this.matrix=[];
         var row:Tile[];
@@ -60,9 +65,9 @@ export class Field{
                 }
             }
 
-            //Insert random mud tiles, except on the first cell
-            /*let mudToInsert=this.mudCount;
-            while(mudToInsert>0)
+            //Insert random mushroom tiles, except on the first cell
+            let mushroomsToInsert=this.mushroomCount;
+            while(mushroomsToInsert>0)
             {
                 let row=Math.floor(Math.random()*this.height);
                 let col=Math.floor(Math.random()*this.width);
@@ -70,11 +75,11 @@ export class Field{
                     continue;
                 if(this.matrix[row][col].content==TileContent.nothing)
                 {
-                    this.matrix[row][col].content=TileContent.mud;
-                    mudToInsert--;
-                    this.incrementAdjMineCounts(row,col);
+                    this.matrix[row][col].content=TileContent.mushroom;
+                    mushroomsToInsert--;
+                    this.incrementAdjMushroomCounts(row,col);
                 }
-            }*/
+            }
 
             //Insert random coin tiles, except on the first cell
             let coinsToInsert=this.coinCount;
@@ -113,6 +118,13 @@ export class Field{
         const neighCoords=this.getNeighbourCoords(row,col)
 
         neighCoords.forEach((neigh)=>{this.matrix[neigh.row][neigh.col].mineCount++})
+    }
+
+    incrementAdjMushroomCounts(row:number,col:number)
+    {
+        const neighCoords=this.getNeighbourCoords(row,col)
+
+        neighCoords.forEach((neigh)=>{this.matrix[neigh.row][neigh.col].mushroomCount++})
     }
 
     getNeighbourCoords(row:number,col:number):ICoord[]

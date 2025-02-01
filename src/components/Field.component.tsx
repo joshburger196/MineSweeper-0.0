@@ -9,10 +9,11 @@ import { Action } from '../classes/Action';
 const FIELD_WIDTH=7;
 const FIELD_HEIGHT=10;
 const MINE_COUNT=7;
+const MUSHROOM_COUNT=7;
 const COIN_COUNT=10;
 
 const FieldComp = () => {
-  const [fieldState,updateField]=useReducer(fieldReducer,new Field(FIELD_HEIGHT,FIELD_WIDTH,MINE_COUNT,COIN_COUNT));
+  const [fieldState,updateField]=useReducer(fieldReducer,new Field(FIELD_HEIGHT,FIELD_WIDTH,MINE_COUNT,MUSHROOM_COUNT,COIN_COUNT));
   const [menuVisible, setMenuVisible] = useState(false);
   const [flagMode,setFlagMode]=useState(false);
   const [selectedFlag, selectFlag]=useState(Flag.deadly);
@@ -47,8 +48,13 @@ const FieldComp = () => {
   {
     if(!fieldState.isGameOver)
     {
-      setFlagMode(!flagMode);
-      selectFlag(flag);
+      if(flagMode&&flag!=selectedFlag)
+        selectFlag(flag)
+      else
+      {
+        setFlagMode(!flagMode);
+        selectFlag(flag);
+      }
     }
   }
 
@@ -74,7 +80,10 @@ const FieldComp = () => {
     
     <View style={styles.centeredView}>
       <View style={styles.row}>
-        <Text>🪙:{fieldState.coinsDiscovered}</Text>
+        <Text style={styles.text}>👛🪙: {fieldState.coinsDiscovered}/{fieldState.coinCount}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.text}>💀🍄: {fieldState.mushroomsDiscovered}/{fieldState.poisonResistence}</Text>
       </View>
       <View style={styles.field}>
         {fieldState.matrix.map((row, rowIndex)=>(
@@ -138,6 +147,11 @@ const FieldComp = () => {
           onPress={()=>{toggleFlagMode(Flag.deadly)}}>
           <Text style={styles.button}>🏴‍☠️</Text>
         </Pressable>
+        <Pressable 
+          style={(selectedFlag==Flag.mushroom)&&flagMode&&styles.pressedButton}
+          onPress={()=>{toggleFlagMode(Flag.mushroom)}}>
+          <Text style={styles.button}>🚩</Text>
+        </Pressable>
       </View>
 
       <Pressable onPress={toggleMenu}>
@@ -163,6 +177,11 @@ const styles=StyleSheet.create({
     borderStyle:"dotted",
   },
   row:{flexDirection:"row"},
+  text:
+  {
+    fontSize:18,
+    fontWeight:800,
+  },
   button:{fontSize:30},
   pressedButton:
   {

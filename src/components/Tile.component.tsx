@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Tile } from "../classes/Tile";
 import { Flag, TileContent } from "../CustomTypes";
 
@@ -8,8 +8,7 @@ interface Props{
 }
 
 const TileComp = (props:Props) => {
-  const {row,col,content,flag,mineCount}=props.tileObj;
-  const {isDiscovered}=props.tileObj;
+  const {row,col,content,flag,mineCount,mushroomCount,isDiscovered}=props.tileObj;
   let contentString:string="";
   let flagString:string="";
 
@@ -18,18 +17,15 @@ const TileComp = (props:Props) => {
     case TileContent.mine:
       contentString="💣";
       break;
-    /*case TileContent.mud:
-      contentString="🟫";
-      break;*/
+    case TileContent.mushroom:
+      contentString="🍄";
+      break;
     case TileContent.coin:
       contentString="🪙";
       break;
     case TileContent.treasure:
       contentString="👑";
       break;
-    case TileContent.nothing:
-      if(mineCount>0)
-        contentString=mineCount.toString();
   }
   
   switch(flag)
@@ -37,14 +33,38 @@ const TileComp = (props:Props) => {
     case Flag.deadly:
       flagString="🏴‍☠️";
       break;
+    case Flag.mushroom:
+      flagString="🚩";
+      break;
   }
 
+  let tileLabelElement:React.JSX.Element=<></>;
+  if(isDiscovered)
+  {
+    if(content==TileContent.nothing)
+    {
+      tileLabelElement=
+        <View style={styles.row}>
+          {mineCount>0 &&
+            <Text style={[styles.text,styles.mineCount]}>
+              {mineCount}
+            </Text>}
+          {mushroomCount>0 &&
+            <Text style={[styles.text,styles.mushroomCount]}>
+              {mushroomCount}
+            </Text>}
+        </View>;
+    }
+    else
+      tileLabelElement=<Text style={styles.symbol}>{contentString}</Text>
+  }
+  else if(flag!=null)
+    tileLabelElement=<Text style={styles.symbol}>{flagString}</Text>;
+
   return (
-    <Pressable style={[styles.container, isDiscovered ? styles.known : styles.unknown]}
+    <Pressable style={[styles.container,styles.row, isDiscovered ? styles.known : styles.unknown]}
       onPress={()=>props.onTilePress(row,col)}>
-      <Text style={[styles.text,styles.mineCount]}>
-        {isDiscovered ? contentString : flagString}
-      </Text>
+        {tileLabelElement}
     </Pressable>
   )
 }
@@ -74,27 +94,23 @@ const styles=StyleSheet.create({
     borderColor:"black",
     borderStyle:"dotted",
   },
-  mine:
+  row:
   {
-    backgroundColor:"red"
-  },
-  mud:
-  {
-    backgroundColor:"brown"
+    flexDirection:"row",
+    gap:3
   },
   text:
+  {
+    fontSize:14,
+    fontWeight:800,
+  },
+  symbol:
   {
     fontSize:18,
     fontWeight:800,
   },
-  mineCount:
-  {
-    color:"black"
-  },
-  mudCount:
-  {
-    color:"brown"
-  }
+  mineCount:{color:"black"},
+  mushroomCount:{color:"red"}
 });
 
 export default TileComp;

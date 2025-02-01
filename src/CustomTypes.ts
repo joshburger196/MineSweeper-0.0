@@ -15,13 +15,14 @@ enum ActionType
 
 enum Flag
 {
-    deadly
+    deadly,
+    mushroom
 }
 
 enum TileContent
 {
     mine,
-    mud,
+    mushroom,
     coin,
     treasure,
     nothing

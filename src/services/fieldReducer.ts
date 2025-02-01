@@ -14,6 +14,12 @@ export function fieldReducer(field:Field,act:Action):Field
             newField.matrix[act.row][act.col].isDiscovered=true;
             if(newField.matrix[act.row][act.col].content==TileContent.mine)
                 newField.isGameOver=true;
+            if(newField.matrix[act.row][act.col].content==TileContent.mushroom)
+            {
+                newField.mushroomsDiscovered++;
+                if(newField.mushroomsDiscovered>=newField.poisonResistence)
+                    newField.isGameOver=true;
+            }
             else if(newField.matrix[act.row][act.col].content==TileContent.treasure)
                 newField.isGameOver=newField.isGameWon=true;
             break;
@@ -42,7 +48,7 @@ export function fieldReducer(field:Field,act:Action):Field
             break;
         
         case ActionType.resetField:
-            newField=new Field(field.height,field.width,field.mineCount,field.coinCount);
+            newField=new Field(field.height,field.width,field.mineCount,field.mushroomCount,field.coinCount);
             break;
         
         case ActionType.revealField:

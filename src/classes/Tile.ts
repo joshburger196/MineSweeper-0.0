@@ -4,20 +4,16 @@ export class Tile
 {
     row:number;
     col:number;
-    content:TileContent;
+    content:TileContent=TileContent.nothing;
     flag:Flag|null=null;
-    isDiscovered:boolean;
-    mineCount:number;
-    //mudCount:number;
+    isDiscovered:boolean=false;
+    mineCount:number=0;
+    mushroomCount:number=0;
 
     constructor(row:number,col:number)
     {
         this.row=row;
         this.col=col;
-        this.content=TileContent.nothing;
-        this.isDiscovered=false;
-        this.mineCount=0;
-        //this.mudCount=0;
     }
 
 }
